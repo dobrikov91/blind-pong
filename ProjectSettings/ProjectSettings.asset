@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 23
+  productGUID: 4b6c2d1e8f3a9b5c7d2e4f6a8b3c5d7e
+  companyName: DefaultCompany
+  productName: BlindPong
+  m_ColorSpace: 1
+  m_MTRendering: 1
+  activeInputHandler: 0
+  applicationIdentifier:
+    Android: com.DefaultCompany.BlindPong
+    Standalone: com.DefaultCompany.BlindPong
+  buildNumber:
+    Android: 0
+    Standalone: 0
+  AndroidMinSdkVersion: 29
+  AndroidTargetSdkVersion: 32
+  AndroidBundleVersionCode: 1
+  m_BuildTargetGroup: 0
+  stripUnusedMeshComponents: 1
+  defaultScreenWidth: 1920
+  defaultScreenHeight: 1080
+  runInBackground: 1
+  gpuSkinning: 1
+  m_SplashScreenBackgroundColor:
+    serializedVersion: 2
+    rgba: 4278190080
+  m_ShowUnitySplashScreen: 0
+  m_VirtualRealitySplashScreen: {fileID: 0}
+  scriptingDefineSymbols: {}
+  additionalCompilerArguments: {}
+  platformArchitecture: {}
+  scriptingBackend: {}
+  il2cppCompilerConfiguration: {}
+  managedStrippingLevel: {}
