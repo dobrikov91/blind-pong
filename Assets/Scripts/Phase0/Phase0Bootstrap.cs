@@ -95,5 +95,7 @@ public class Phase0Bootstrap : MonoBehaviour
         var cam = Camera.main;
         if (cam.GetComponent<AudioListener>() == null)
             cam.gameObject.AddComponent<AudioListener>();
+        if (cam.GetComponent<DebugFlyCamera>() == null)
+            cam.gameObject.AddComponent<DebugFlyCamera>();
     }
 }
