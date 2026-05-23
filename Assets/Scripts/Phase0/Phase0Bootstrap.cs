@@ -23,25 +23,26 @@ public class Phase0Bootstrap : MonoBehaviour
     public float arenaHeight = 4f;
     public float arenaDepth  = 6f;
 
+    [Header("Debug")]
+    public bool debugVisuals = true;
+
     void Awake()
     {
-        BlackVoid();
-        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth);
+        SetupCamera();
+        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals);
         SpawnBall();
         EnsureListener();
     }
 
-    void BlackVoid()
+    void SetupCamera()
     {
-        RenderSettings.skybox      = null;
-        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-        RenderSettings.ambientLight = Color.black;
+        RenderSettings.skybox       = null;
+        RenderSettings.ambientMode  = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = debugVisuals ? new Color(0.15f, 0.15f, 0.15f) : Color.black;
 
         var cam = Camera.main;
         cam.backgroundColor = Color.black;
         cam.clearFlags      = CameraClearFlags.SolidColor;
-
-        // Place the listener (player head) at centre of arena
         cam.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 
@@ -52,8 +53,17 @@ public class Phase0Bootstrap : MonoBehaviour
         go.transform.position   = new Vector3(0f, 0.5f, 0f);
         go.transform.localScale = Vector3.one * 0.08f;
 
-        // Invisible — existence is revealed only by sound
-        go.GetComponent<Renderer>().enabled = true; //false;
+        var renderer = go.GetComponent<Renderer>();
+        if (debugVisuals)
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                      ?? Shader.Find("Unlit/Color");
+            renderer.sharedMaterial = new Material(shader) { color = new Color(1f, 0.45f, 0f) }; // orange
+        }
+        else
+        {
+            renderer.enabled = false;
+        }
 
         // Bouncy physics material on ball collider
         var col = go.GetComponent<SphereCollider>();
