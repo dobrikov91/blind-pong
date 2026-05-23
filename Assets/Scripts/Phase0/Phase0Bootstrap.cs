@@ -53,7 +53,7 @@ public class Phase0Bootstrap : MonoBehaviour
         go.transform.localScale = Vector3.one * 0.08f;
 
         // Invisible — existence is revealed only by sound
-        go.GetComponent<Renderer>().enabled = false;
+        go.GetComponent<Renderer>().enabled = true; //false;
 
         // Bouncy physics material on ball collider
         var col = go.GetComponent<SphereCollider>();
