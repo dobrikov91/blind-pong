@@ -134,20 +134,33 @@ public class Paddle : MonoBehaviour
         flashCoroutine = StartCoroutine(FlashRoutine());
     }
 
+    // URP Unlit uses _BaseColor; Built-in Unlit/Color uses _Color.
+    static readonly int BaseProp = Shader.PropertyToID("_BaseColor");
+    static readonly int ColProp  = Shader.PropertyToID("_Color");
+
+    static Color GetColor(Material m)
+        => m.HasProperty(BaseProp) ? m.GetColor(BaseProp) : m.GetColor(ColProp);
+
+    static void SetColor(Material m, Color c)
+    {
+        if (m.HasProperty(BaseProp)) m.SetColor(BaseProp, c);
+        if (m.HasProperty(ColProp))  m.SetColor(ColProp,  c);
+    }
+
     IEnumerator FlashRoutine()
     {
         var renderers = GetComponentsInChildren<Renderer>();
         var original  = new Color[renderers.Length];
         for (int i = 0; i < renderers.Length; i++)
         {
-            original[i]           = renderers[i].material.color;
-            renderers[i].material.color = flashColor;
+            original[i] = GetColor(renderers[i].material);
+            SetColor(renderers[i].material, flashColor);
         }
 
         yield return new WaitForSeconds(flashDuration);
 
         for (int i = 0; i < renderers.Length; i++)
-            renderers[i].material.color = original[i];
+            SetColor(renderers[i].material, original[i]);
 
         flashCoroutine = null;
     }
