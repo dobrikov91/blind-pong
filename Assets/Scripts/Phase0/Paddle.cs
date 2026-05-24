@@ -46,10 +46,12 @@ public class Paddle : MonoBehaviour
             && rightHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 vrPos)
             && rightHand.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion vrRot))
         {
-            // Controller positions are in tracking-space; transform via rig root if present.
-            Transform origin = cam.parent;
-            targetPos = origin != null ? origin.TransformPoint(vrPos) : vrPos;
-            targetRot = origin != null ? origin.rotation * vrRot       : vrRot;
+            // XROrigin uses Device tracking mode, so tracking space == world space
+            // (HMD initial position is world origin). Controller positions map directly.
+            // If the XR Origin has a non-identity transform, go via its parent chain.
+            Transform xrOrigin = cam.parent?.parent; // Camera → Camera Offset → XR Origin
+            targetPos = xrOrigin != null ? xrOrigin.TransformPoint(vrPos) : vrPos;
+            targetRot = xrOrigin != null ? xrOrigin.rotation * vrRot       : vrRot;
         }
         else
         {
