@@ -5,11 +5,11 @@ using UnityEngine;
 public class BallController : MonoBehaviour
 {
     [Header("Speed (m/s)")]
-    public float minSpeed = 1.5f;
-    public float maxSpeed = 5f;
+    public float minSpeed = 0.5f;
+    public float maxSpeed = 15f;
 
     // Very low gravity — ball drifts slowly enough to locate it by ear alone
-    [Range(0f, 1f)] public float gravityScale = 0.1f;
+    [Range(0f, 1f)] public float gravityScale = 0.3f;
 
     // Surface kind + world-space contact point
     public event Action<SurfaceType.Kind, Vector3> OnBallHit;
@@ -53,7 +53,7 @@ public class BallController : MonoBehaviour
         // Enforce a minimum outward speed component to break that chain.
         float outward = Vector3.Dot(reflected, normal);
         if (outward < 0.5f)
-            reflected += normal * (0.5f - outward);
+            reflected += normal * (0.5f - outward) * 1.2f;
 
         rb.linearVelocity = reflected;
         ClampSpeed();
