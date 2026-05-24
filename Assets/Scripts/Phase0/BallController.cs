@@ -5,8 +5,8 @@ using UnityEngine;
 public class BallController : MonoBehaviour
 {
     [Header("Speed (m/s)")]
-    public float minSpeed = 2f;
-    public float maxSpeed = 8f;
+    public float minSpeed = 1.5f;
+    public float maxSpeed = 5f;
 
     // 50% earth gravity — ball stays in the air long enough to track by ear
     [Range(0f, 1f)] public float gravityScale = 0.5f;
@@ -27,7 +27,7 @@ public class BallController : MonoBehaviour
 
     void Start()
     {
-        rb.linearVelocity = new Vector3(2.5f, 3f, 2f);
+        rb.linearVelocity = new Vector3(1.5f, 2f, 1.5f);
     }
 
     void FixedUpdate()
@@ -38,7 +38,8 @@ public class BallController : MonoBehaviour
 
     void OnCollisionEnter(Collision col)
     {
-        Vector3 normal    = col.contacts[0].normal;
+        var contact = col.contacts[0];
+        Vector3 normal    = contact.normal;
         Vector3 reflected = Vector3.Reflect(rb.linearVelocity, normal);
 
         // Add paddle swing velocity: feel is tuned via Paddle.velocityMultiplier
@@ -46,14 +47,25 @@ public class BallController : MonoBehaviour
         if (paddle != null)
             reflected += paddle.Velocity * paddle.velocityMultiplier;
 
+        // Shallow-angle hits leave the ball barely moving away from the surface.
+        // Gravity can push it back in before the next frame, causing a chain of
+        // re-collisions that makes the ball scrape along the wall.
+        // Enforce a minimum outward speed component to break that chain.
+        float outward = Vector3.Dot(reflected, normal);
+        if (outward < 0.5f)
+            reflected += normal * (0.5f - outward);
+
         rb.linearVelocity = reflected;
         ClampSpeed();
+
+        // Move the ball clear of the surface so it can't re-collide next physics step.
+        rb.position += normal * 0.005f;
 
         var surface = col.gameObject.GetComponent<SurfaceType>()
                    ?? col.gameObject.GetComponentInParent<SurfaceType>();
         OnBallHit?.Invoke(
             surface != null ? surface.kind : SurfaceType.Kind.Wall,
-            col.contacts[0].point
+            contact.point
         );
     }
 
