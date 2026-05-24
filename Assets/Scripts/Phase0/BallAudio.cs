@@ -14,6 +14,8 @@ public class BallAudio : MonoBehaviour
     public AudioClip wallHit;
     public AudioClip floorHit;
     public AudioClip paddleHit;
+    public AudioClip frontWallHit;
+    public AudioClip backWallHit;
 
     [Header("Whoosh envelope")]
     [Range(0f, 1f)] public float whooshMinVolume = 0.08f;  // always audible
@@ -57,6 +59,8 @@ public class BallAudio : MonoBehaviour
         {
             SurfaceType.Kind.FloorCeiling => floorHit,
             SurfaceType.Kind.Paddle       => paddleHit,
+            SurfaceType.Kind.WallFront    => frontWallHit,
+            SurfaceType.Kind.WallBack     => backWallHit,
             _                             => wallHit,
         };
         if (clip != null)

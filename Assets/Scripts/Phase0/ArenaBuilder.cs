@@ -24,8 +24,8 @@ public static class ArenaBuilder
         AddPanel(root, "Ceiling",   new Vector3( 0,   hh,  0), new Vector3(width, 0.1f, depth),  SurfaceType.Kind.FloorCeiling, mat, debugVisible);
         AddPanel(root, "WallLeft",  new Vector3(-hw,  0,   0), new Vector3(0.1f, height, depth), SurfaceType.Kind.Wall,         mat, debugVisible);
         AddPanel(root, "WallRight", new Vector3( hw,  0,   0), new Vector3(0.1f, height, depth), SurfaceType.Kind.Wall,         mat, debugVisible);
-        AddPanel(root, "WallFront", new Vector3( 0,   0,   hd), new Vector3(width, height, 0.1f), SurfaceType.Kind.Wall,        mat, debugVisible);
-        AddPanel(root, "WallBack",  new Vector3( 0,   0,  -hd), new Vector3(width, height, 0.1f), SurfaceType.Kind.Wall,        mat, debugVisible);
+        AddPanel(root, "WallFront", new Vector3( 0,   0,   hd), new Vector3(width, height, 0.1f), SurfaceType.Kind.WallFront,   mat, debugVisible);
+        AddPanel(root, "WallBack",  new Vector3( 0,   0,  -hd), new Vector3(width, height, 0.1f), SurfaceType.Kind.WallBack,    mat, debugVisible);
     }
 
     static void AddPanel(GameObject root, string panelName, Vector3 localPos, Vector3 colSize,

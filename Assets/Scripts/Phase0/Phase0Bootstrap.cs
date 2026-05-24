@@ -157,9 +157,11 @@ public class Phase0Bootstrap : MonoBehaviour
         go.AddComponent<AudioSource>();
         var audio = go.AddComponent<BallAudio>();
 
-        audio.wallHit   = ProceduralAudio.WallClick();
-        audio.floorHit  = ProceduralAudio.FloorThud();
-        audio.paddleHit = ProceduralAudio.PaddlePop();
+        audio.wallHit      = ProceduralAudio.WallClick();
+        audio.floorHit     = ProceduralAudio.FloorThud();
+        audio.paddleHit    = ProceduralAudio.PaddlePop();
+        audio.frontWallHit = ProceduralAudio.FrontWallPing();
+        audio.backWallHit  = ProceduralAudio.BackWallThock();
         audio.StartWhoosh(ProceduralAudio.Whoosh());
     }
 

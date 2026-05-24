@@ -30,6 +30,20 @@ public static class ProceduralAudio
         return MathF.Sin(MathF.PI * 2f * freq * t) * MathF.Exp(-t * 45f);
     });
 
+    // Bright ping — far (front) wall, high and sharp so it reads as "distant"
+    public static AudioClip FrontWallPing() => Synth("FrontWallPing", 0.05f, i =>
+    {
+        float t = (float)i / Rate;
+        return MathF.Sin(MathF.PI * 2f * 1200f * t) * MathF.Exp(-t * 120f);
+    });
+
+    // Hollow thock — near (back) wall, low and woody so it reads as "behind you"
+    public static AudioClip BackWallThock() => Synth("BackWallThock", 0.09f, i =>
+    {
+        float t = (float)i / Rate;
+        return MathF.Sin(MathF.PI * 2f * 320f * t) * MathF.Exp(-t * 40f);
+    });
+
     // Low-pass filtered noise for looping ball-in-flight whoosh.
     // BallAudio modulates pitch and volume so this just needs a plausible loop.
     public static AudioClip Whoosh(float duration = 2f)

@@ -4,6 +4,6 @@ using UnityEngine;
 // collision surfaces without relying on pre-defined tags.
 public class SurfaceType : MonoBehaviour
 {
-    public enum Kind { Wall, FloorCeiling, Paddle }
+    public enum Kind { Wall, FloorCeiling, Paddle, WallFront, WallBack }
     public Kind kind = Kind.Wall;
 }
