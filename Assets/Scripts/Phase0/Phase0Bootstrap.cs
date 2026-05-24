@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.XR;
 using Unity.XR.CoreUtils;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 
 // Phase 0 — Audio Localization PoC
 //
@@ -93,9 +95,19 @@ public class Phase0Bootstrap : MonoBehaviour
         cam.transform.localRotation = Quaternion.identity;
 
         var xrOrigin = originGO.AddComponent<XROrigin>();
-        xrOrigin.Camera                    = cam;
-        xrOrigin.CameraFloorOffsetObject   = offsetGO;
+        xrOrigin.Camera                      = cam;
+        xrOrigin.CameraFloorOffsetObject     = offsetGO;
         xrOrigin.RequestedTrackingOriginMode = XROrigin.TrackingOriginMode.Device;
+
+        // TrackedPoseDriver is what actually moves the camera to match the headset.
+        // Without it XROrigin exists but tracking is never applied — hence the warning.
+        var tpd = cam.gameObject.AddComponent<TrackedPoseDriver>();
+        tpd.positionInput = new InputActionProperty(new InputAction(
+            "CamPosition", InputActionType.Value,
+            "<XRHMD>/centerEyePosition", expectedControlType: "Vector3"));
+        tpd.rotationInput = new InputActionProperty(new InputAction(
+            "CamRotation", InputActionType.Value,
+            "<XRHMD>/centerEyeRotation", expectedControlType: "Quaternion"));
     }
 
     void SpawnBall()
