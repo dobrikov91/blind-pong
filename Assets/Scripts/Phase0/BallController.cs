@@ -79,4 +79,11 @@ public class BallController : MonoBehaviour
     }
 
     public float Speed => rb.linearVelocity.magnitude;
+
+    public void Respawn(Vector3 pos)
+    {
+        rb.position        = pos;
+        rb.linearVelocity  = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
 }

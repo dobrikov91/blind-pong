@@ -22,6 +22,9 @@ public class Paddle : MonoBehaviour
 
     InputAction posAction;
     InputAction rotAction;
+    InputAction respawnAction;
+
+    BallController ball;
 
     void Awake()
     {
@@ -41,12 +44,35 @@ public class Paddle : MonoBehaviour
             "<XRController>{RightHand}/deviceRotation", expectedControlType: "Quaternion");
         posAction.Enable();
         rotAction.Enable();
+
+        // A button on Quest controller; R key on desktop.
+        respawnAction = new InputAction("Respawn", InputActionType.Button);
+        respawnAction.AddBinding("<XRController>{RightHand}/primaryButton");
+        respawnAction.AddBinding("<Keyboard>/r");
+        respawnAction.Enable();
+    }
+
+    void Start()
+    {
+        ball = Object.FindFirstObjectByType<BallController>();
+    }
+
+    void Update()
+    {
+        if (!respawnAction.WasPressedThisFrame()) return;
+        if (ball == null)
+            ball = Object.FindFirstObjectByType<BallController>();
+        if (ball == null) return;
+
+        // Spawn at the tip of the racket head so the player can serve immediately.
+        ball.Respawn(transform.position + transform.up * 0.4f);
     }
 
     void OnDestroy()
     {
         posAction?.Dispose();
         rotAction?.Dispose();
+        respawnAction?.Dispose();
     }
 
     void FixedUpdate()
