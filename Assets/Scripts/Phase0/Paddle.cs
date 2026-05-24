@@ -13,6 +13,11 @@ public class Paddle : MonoBehaviour
     [Header("Desktop fallback")]
     public float armLength = 0.6f;
 
+    [Header("Mode")]
+    // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
+    // to Z). Hand controls Y and Z only; X is locked to 0. Rotation is fixed.
+    public bool spaceInvadersMode = false;
+
     // Read by BallController on contact
     public Vector3 Velocity { get; private set; }
 
@@ -83,26 +88,25 @@ public class Paddle : MonoBehaviour
         bool inVR = posAction.activeControl != null;
         if (inVR)
         {
-            Vector3    vrPos = posAction.ReadValue<Vector3>();
-            Quaternion vrRot = rotAction.ReadValue<Quaternion>();
-
-            // Camera Offset is the XROrigin child whose local transform absorbs any
-            // floor-height compensation. Transforming through it keeps the controller
-            // in the same world space as the camera driven by TrackedPoseDriver.
+            Vector3 vrPos = posAction.ReadValue<Vector3>();
             Transform cameraOffset = cam.parent;
-            // 180° around Z flips the paddle's local Y axis so the head faces outward
-            // (toward the ball) and the handle is in the player's grip, not the reverse.
-            // Adjust if the face still feels twisted after testing.
-            var grip = Quaternion.Euler(0f, 0f, 180f);
-            if (cameraOffset != null)
+            Vector3 worldPos = cameraOffset != null
+                ? cameraOffset.TransformPoint(vrPos) : vrPos;
+
+            if (spaceInvadersMode)
             {
-                targetPos = cameraOffset.TransformPoint(vrPos);
-                targetRot = cameraOffset.rotation * vrRot * grip;
+                // Lock X to 0; hand drives Y and Z only.
+                // Rotation is fixed: face perpendicular to Z, parallel to X axis.
+                targetPos = new Vector3(0f, worldPos.y, worldPos.z);
+                targetRot = Quaternion.identity;
             }
             else
             {
-                targetPos = vrPos;
-                targetRot = vrRot * grip;
+                Quaternion vrRot = rotAction.ReadValue<Quaternion>();
+                var grip = Quaternion.Euler(0f, 0f, 180f);
+                targetPos = worldPos;
+                targetRot = (cameraOffset != null ? cameraOffset.rotation : Quaternion.identity)
+                            * vrRot * grip;
             }
         }
         else
@@ -111,7 +115,7 @@ public class Paddle : MonoBehaviour
             targetPos = cam.position
                       + cam.forward * armLength
                       + cam.up * -0.15f;
-            targetRot = cam.rotation;
+            targetRot = spaceInvadersMode ? Quaternion.identity : cam.rotation;
         }
 
         Velocity = (targetPos - prevPos) / Time.fixedDeltaTime;
