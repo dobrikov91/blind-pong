@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR;
+using Unity.XR.CoreUtils;
 
 // Phase 0 — Audio Localization PoC
 //
@@ -30,37 +31,71 @@ public class Phase0Bootstrap : MonoBehaviour
     public bool debugVisuals = true;
 
     [Header("VR")]
-    // Tick this before making an Android/Quest build.
-    // Disables the desktop fly-camera and lets OpenXR drive head tracking.
+    // Tick this when using Quest Link or building for Quest.
     public bool vrMode = false;
 
     void Awake()
     {
-        // Auto-detect XR at runtime so a single build works on both desktop and Quest.
-        bool xrRunning = XRSettings.enabled && XRSettings.loadedDeviceName.Length > 0
-                                            && XRSettings.loadedDeviceName != "None";
-        bool useVR = vrMode || xrRunning;
-
-        SetupCamera(useVR);
+        // Build the static world first — no VR dependency yet.
+        SetupRenderSettings();
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals);
         SpawnBall();
         SpawnPaddle();
+    }
+
+    void Start()
+    {
+        // XR subsystems finish loading between Awake and Start, so detect here.
+        bool xrRunning = XRSettings.enabled
+                      && !string.IsNullOrEmpty(XRSettings.loadedDeviceName)
+                      && XRSettings.loadedDeviceName != "None";
+        bool useVR = vrMode || xrRunning;
+
+        SetupCamera(useVR);
         EnsureListener(useVR);
     }
 
-    void SetupCamera(bool useVR)
+    void SetupRenderSettings()
     {
         RenderSettings.skybox       = null;
         RenderSettings.ambientMode  = UnityEngine.Rendering.AmbientMode.Flat;
         RenderSettings.ambientLight = debugVisuals ? new Color(0.15f, 0.15f, 0.15f) : Color.black;
+    }
 
+    void SetupCamera(bool useVR)
+    {
         var cam = Camera.main;
         cam.backgroundColor = Color.black;
         cam.clearFlags      = CameraClearFlags.SolidColor;
 
-        // In VR the headset controls the camera — don't override its position.
-        if (!useVR)
+        if (useVR)
+            SetupXROrigin(cam);
+        else
             cam.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+    }
+
+    // Creates the XR Origin hierarchy Unity 6 + OpenXR requires for correct head tracking.
+    // Without it the tracking space and world space are conflated — everything appears
+    // glued to the headset as you move.
+    // Device tracking mode makes the HMD's initial position the world origin,
+    // so the player starts at the centre of the arena.
+    void SetupXROrigin(Camera cam)
+    {
+        var originGO = new GameObject("XR Origin");
+        originGO.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        var offsetGO = new GameObject("Camera Offset");
+        offsetGO.transform.SetParent(originGO.transform);
+        offsetGO.transform.localPosition = Vector3.zero;
+
+        cam.transform.SetParent(offsetGO.transform);
+        cam.transform.localPosition = Vector3.zero;
+        cam.transform.localRotation = Quaternion.identity;
+
+        var xrOrigin = originGO.AddComponent<XROrigin>();
+        xrOrigin.Camera                    = cam;
+        xrOrigin.CameraFloorOffsetObject   = offsetGO;
+        xrOrigin.RequestedTrackingOriginMode = XROrigin.TrackingOriginMode.Device;
     }
 
     void SpawnBall()
