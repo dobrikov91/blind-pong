@@ -43,7 +43,7 @@ public class Phase0Bootstrap : MonoBehaviour
         // Build the static world first — no VR dependency yet.
         SetupRenderSettings();
         // Lift the arena so its floor panel sits at world y=0 (real floor in Floor tracking).
-        float yOfs   = arenaHeight * 0.5f;
+        float yOfs   = arenaHeight * 0.5f + 0.5f;
         float zCenter = (arenaZMin + arenaZMax) * 0.5f;
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaZMin, arenaZMax, debugVisuals, yOfs);
         if (debugVisuals) FloorGrid.Build(arenaWidth, arenaZMin, arenaZMax);
@@ -203,7 +203,7 @@ public class Phase0Bootstrap : MonoBehaviour
         siPad.name = "SIPad";
         siPad.transform.SetParent(siGeo.transform);
         siPad.transform.localPosition = Vector3.zero;
-        siPad.transform.localScale    = new Vector3(0.6f, 0.6f, 0.025f);
+        siPad.transform.localScale    = new Vector3(0.3f, 0.3f, 0.025f);
         siPad.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
 
         // ── Visuals ───────────────────────────────────────────────────────────

@@ -31,14 +31,14 @@ public static class ProceduralAudio
     });
 
     // Bright ping — far (front) wall, high and sharp so it reads as "distant"
-    public static AudioClip FrontWallPing() => Synth("FrontWallPing", 0.05f, i =>
+    public static AudioClip FrontWallPing() => Synth("FrontWallPing", 0.9f, i =>
     {
         float t = (float)i / Rate;
         return MathF.Sin(MathF.PI * 2f * 1200f * t) * MathF.Exp(-t * 120f);
     });
 
     // Hollow thock — near (back) wall, low and woody so it reads as "behind you"
-    public static AudioClip BackWallThock() => Synth("BackWallThock", 0.09f, i =>
+    public static AudioClip BackWallThock() => Synth("BackWallThock", 0.9f, i =>
     {
         float t = (float)i / Rate;
         return MathF.Sin(MathF.PI * 2f * 320f * t) * MathF.Exp(-t * 40f);

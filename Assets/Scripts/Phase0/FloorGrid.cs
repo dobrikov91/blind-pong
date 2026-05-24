@@ -12,7 +12,7 @@ public static class FloorGrid
         float hw     = width * 0.5f;
         float depth  = zMax - zMin;
         float zCenter = (zMin + zMax) * 0.5f;
-        float y  = 0.003f; // 3 mm above floor to avoid z-fighting
+        float y  = 0.003f + 0.5f + 0.05f; // 3 mm above floor to avoid z-fighting
 
         // Strips parallel to X axis, one per integer Z value
         for (int iz = Mathf.CeilToInt(zMin); iz <= Mathf.FloorToInt(zMax); iz++)
