@@ -41,8 +41,9 @@ public static class ProceduralAudio
         for (int i = 0; i < n; i++)
         {
             prev   = Mathf.Lerp(prev, UnityEngine.Random.Range(-1f, 1f), 0.04f);
+            prev = UnityEngine.Random.Range(-1f, 1f);
             float env = MathF.Sin(MathF.PI * i / n); // fade in/out to avoid click at loop point
-            data[i] = prev * env * 0.5f;
+            data[i] = prev; // * env * 0.5f;
         }
 
         var clip = AudioClip.Create("Whoosh", n, 1, Rate, false);
