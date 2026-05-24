@@ -29,7 +29,7 @@ public class Paddle : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.isKinematic             = true;
         rb.interpolation           = RigidbodyInterpolation.Interpolate;
-        rb.collisionDetectionMode  = CollisionDetectionMode.ContinuousKinematic;
+        rb.collisionDetectionMode  = CollisionDetectionMode.ContinuousSpeculative;
 
         cam     = Camera.main.transform;
         prevPos = transform.position;
