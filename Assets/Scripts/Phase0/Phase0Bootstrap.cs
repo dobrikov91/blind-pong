@@ -44,6 +44,7 @@ public class Phase0Bootstrap : MonoBehaviour
         SetupCamera(useVR);
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals);
         SpawnBall();
+        SpawnPaddle();
         EnsureListener(useVR);
     }
 
@@ -104,6 +105,46 @@ public class Phase0Bootstrap : MonoBehaviour
         audio.floorHit  = ProceduralAudio.FloorThud();
         audio.paddleHit = ProceduralAudio.PaddlePop();
         audio.StartWhoosh(ProceduralAudio.Whoosh());
+    }
+
+    void SpawnPaddle()
+    {
+        var root = new GameObject("Paddle");
+        root.AddComponent<Rigidbody>(); // Paddle.Awake configures kinematic
+        root.AddComponent<Paddle>();
+
+        // Racket head — flat box, this is what the ball hits
+        var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        head.name = "RacketHead";
+        head.transform.SetParent(root.transform);
+        head.transform.localPosition = new Vector3(0f, 0.18f, 0f);
+        head.transform.localScale    = new Vector3(0.26f, 0.32f, 0.025f);
+        head.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
+
+        // Handle — thin cylinder below the head
+        var handle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        handle.name = "Handle";
+        handle.transform.SetParent(root.transform);
+        handle.transform.localPosition = new Vector3(0f, -0.12f, 0f);
+        handle.transform.localScale    = new Vector3(0.03f, 0.13f, 0.03f);
+        handle.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
+        // Handle has no game-play collider — only the head should register hits
+        Destroy(handle.GetComponent<Collider>());
+
+        if (debugVisuals)
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                      ?? Shader.Find("Unlit/Color");
+            head.GetComponent<Renderer>().sharedMaterial =
+                new Material(shader) { color = new Color(0.85f, 0.85f, 0.15f) }; // yellow
+            handle.GetComponent<Renderer>().sharedMaterial =
+                new Material(shader) { color = new Color(0.45f, 0.25f, 0.08f) }; // brown
+        }
+        else
+        {
+            head.GetComponent<Renderer>().enabled   = false;
+            handle.GetComponent<Renderer>().enabled = false;
+        }
     }
 
     void EnsureListener(bool useVR)

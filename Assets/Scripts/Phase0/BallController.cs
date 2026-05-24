@@ -38,11 +38,19 @@ public class BallController : MonoBehaviour
 
     void OnCollisionEnter(Collision col)
     {
-        Vector3 normal = col.contacts[0].normal;
-        rb.linearVelocity = Vector3.Reflect(rb.linearVelocity, normal);
+        Vector3 normal    = col.contacts[0].normal;
+        Vector3 reflected = Vector3.Reflect(rb.linearVelocity, normal);
+
+        // Add paddle swing velocity: feel is tuned via Paddle.velocityMultiplier
+        var paddle = col.gameObject.GetComponentInParent<Paddle>();
+        if (paddle != null)
+            reflected += paddle.Velocity * paddle.velocityMultiplier;
+
+        rb.linearVelocity = reflected;
         ClampSpeed();
 
-        var surface = col.gameObject.GetComponent<SurfaceType>();
+        var surface = col.gameObject.GetComponent<SurfaceType>()
+                   ?? col.gameObject.GetComponentInParent<SurfaceType>();
         OnBallHit?.Invoke(
             surface != null ? surface.kind : SurfaceType.Kind.Wall,
             col.contacts[0].point
