@@ -5,9 +5,11 @@ using UnityEngine;
 public static class ArenaBuilder
 {
     public static void Build(float width = 6f, float height = 4f, float depth = 6f,
-                             bool debugVisible = false)
+                             bool debugVisible = false, float yOffset = 0f)
     {
         var root = new GameObject("Arena");
+        // yOffset lifts the whole room so its floor panel lands at world y=0 (real floor).
+        root.transform.position = new Vector3(0, yOffset, 0);
         var mat  = MakeBouncyMaterial();
 
         float hw = width  * 0.5f;

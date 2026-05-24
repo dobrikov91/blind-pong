@@ -8,8 +8,8 @@ public class BallController : MonoBehaviour
     public float minSpeed = 1.5f;
     public float maxSpeed = 5f;
 
-    // 50% earth gravity — ball stays in the air long enough to track by ear
-    [Range(0f, 1f)] public float gravityScale = 0.5f;
+    // Very low gravity — ball drifts slowly enough to locate it by ear alone
+    [Range(0f, 1f)] public float gravityScale = 0.1f;
 
     // Surface kind + world-space contact point
     public event Action<SurfaceType.Kind, Vector3> OnBallHit;

@@ -40,8 +40,10 @@ public class Phase0Bootstrap : MonoBehaviour
     {
         // Build the static world first — no VR dependency yet.
         SetupRenderSettings();
-        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals);
-        SpawnBall();
+        // Lift the arena so its floor panel sits at world y=0 (real floor in Floor tracking).
+        float yOfs = arenaHeight * 0.5f;
+        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals, yOfs);
+        SpawnBall(yOfs);
         SpawnPaddle();
     }
 
@@ -73,14 +75,16 @@ public class Phase0Bootstrap : MonoBehaviour
         if (useVR)
             SetupXROrigin(cam);
         else
-            cam.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            // Desktop: start at arena centre height so fly-cam begins inside the room.
+            cam.transform.SetPositionAndRotation(
+                new Vector3(0, arenaHeight * 0.5f, 0), Quaternion.identity);
     }
 
     // Creates the XR Origin hierarchy Unity 6 + OpenXR requires for correct head tracking.
     // Without it the tracking space and world space are conflated — everything appears
     // glued to the headset as you move.
-    // Device tracking mode makes the HMD's initial position the world origin,
-    // so the player starts at the centre of the arena.
+    // Floor tracking mode places the world origin at the guardian floor level, so the
+    // arena floor (which we shift to y=0) aligns with the real floor without recalibration.
     void SetupXROrigin(Camera cam)
     {
         var originGO = new GameObject("XR Origin");
@@ -97,7 +101,7 @@ public class Phase0Bootstrap : MonoBehaviour
         var xrOrigin = originGO.AddComponent<XROrigin>();
         xrOrigin.Camera                      = cam;
         xrOrigin.CameraFloorOffsetObject     = offsetGO;
-        xrOrigin.RequestedTrackingOriginMode = XROrigin.TrackingOriginMode.Device;
+        xrOrigin.RequestedTrackingOriginMode = XROrigin.TrackingOriginMode.Floor;
 
         // TrackedPoseDriver is what actually moves the camera to match the headset.
         // Without it XROrigin exists but tracking is never applied — hence the warning.
@@ -110,11 +114,12 @@ public class Phase0Bootstrap : MonoBehaviour
             "<XRHMD>/centerEyeRotation", expectedControlType: "Quaternion"));
     }
 
-    void SpawnBall()
+    void SpawnBall(float yOfs)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = "Ball";
-        go.transform.position   = new Vector3(0f, 0.5f, 0f);
+        // Spawn at arena centre height (yOfs) so the ball starts in the middle of the room.
+        go.transform.position   = new Vector3(0f, yOfs, 0f);
         go.transform.localScale = Vector3.one * 0.08f;
 
         var renderer = go.GetComponent<Renderer>();

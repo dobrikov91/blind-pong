@@ -64,15 +64,19 @@ public class Paddle : MonoBehaviour
             // floor-height compensation. Transforming through it keeps the controller
             // in the same world space as the camera driven by TrackedPoseDriver.
             Transform cameraOffset = cam.parent;
+            // 180° around Z flips the paddle's local Y axis so the head faces outward
+            // (toward the ball) and the handle is in the player's grip, not the reverse.
+            // Adjust if the face still feels twisted after testing.
+            var grip = Quaternion.Euler(0f, 0f, 180f);
             if (cameraOffset != null)
             {
                 targetPos = cameraOffset.TransformPoint(vrPos);
-                targetRot = cameraOffset.rotation * vrRot;
+                targetRot = cameraOffset.rotation * vrRot * grip;
             }
             else
             {
                 targetPos = vrPos;
-                targetRot = vrRot;
+                targetRot = vrRot * grip;
             }
         }
         else
