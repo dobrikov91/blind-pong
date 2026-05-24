@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 // Phase 0 — Audio Localization PoC
 //
@@ -11,6 +12,8 @@ using UnityEngine;
 //   4. Project Settings → Audio → Spatializer Plugin → "Steam Audio Spatializer"
 //      (the AudioManager.asset in this repo pre-sets this but Unity may override)
 //   5. File → New Scene (empty), add an empty GameObject, attach this script, Play
+//
+// FOR VR BUILD: see QUEST_BUILD.md at repo root, then tick vrMode in Inspector.
 //
 // VALIDATION:
 //   Wear headphones. Close your eyes. Try to predict where the ball is before
@@ -26,15 +29,25 @@ public class Phase0Bootstrap : MonoBehaviour
     [Header("Debug")]
     public bool debugVisuals = true;
 
+    [Header("VR")]
+    // Tick this before making an Android/Quest build.
+    // Disables the desktop fly-camera and lets OpenXR drive head tracking.
+    public bool vrMode = false;
+
     void Awake()
     {
-        SetupCamera();
+        // Auto-detect XR at runtime so a single build works on both desktop and Quest.
+        bool xrRunning = XRSettings.enabled && XRSettings.loadedDeviceName.Length > 0
+                                            && XRSettings.loadedDeviceName != "None";
+        bool useVR = vrMode || xrRunning;
+
+        SetupCamera(useVR);
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals);
         SpawnBall();
-        EnsureListener();
+        EnsureListener(useVR);
     }
 
-    void SetupCamera()
+    void SetupCamera(bool useVR)
     {
         RenderSettings.skybox       = null;
         RenderSettings.ambientMode  = UnityEngine.Rendering.AmbientMode.Flat;
@@ -43,7 +56,10 @@ public class Phase0Bootstrap : MonoBehaviour
         var cam = Camera.main;
         cam.backgroundColor = Color.black;
         cam.clearFlags      = CameraClearFlags.SolidColor;
-        cam.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        // In VR the headset controls the camera — don't override its position.
+        if (!useVR)
+            cam.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 
     void SpawnBall()
@@ -90,12 +106,14 @@ public class Phase0Bootstrap : MonoBehaviour
         audio.StartWhoosh(ProceduralAudio.Whoosh());
     }
 
-    void EnsureListener()
+    void EnsureListener(bool useVR)
     {
         var cam = Camera.main;
         if (cam.GetComponent<AudioListener>() == null)
             cam.gameObject.AddComponent<AudioListener>();
-        if (cam.GetComponent<DebugFlyCamera>() == null)
+
+        // Fly-camera is desktop-only; in VR the headset drives position/rotation.
+        if (!useVR && cam.GetComponent<DebugFlyCamera>() == null)
             cam.gameObject.AddComponent<DebugFlyCamera>();
     }
 }
