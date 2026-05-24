@@ -25,9 +25,11 @@ using UnityEngine.InputSystem.XR;
 public class Phase0Bootstrap : MonoBehaviour
 {
     [Header("Arena dimensions (metres)")]
-    public float arenaWidth  = 2f;
-    public float arenaHeight = 2f;
-    public float arenaDepth  = 2f;
+    public float arenaWidth  = 1.5f;
+    public float arenaHeight = 1.5f;
+    [Header("Arena Z range (metres)")]
+    public float arenaZMin   = -1f;
+    public float arenaZMax   =  5f;
 
     [Header("Debug")]
     public bool debugVisuals = true;
@@ -41,10 +43,11 @@ public class Phase0Bootstrap : MonoBehaviour
         // Build the static world first — no VR dependency yet.
         SetupRenderSettings();
         // Lift the arena so its floor panel sits at world y=0 (real floor in Floor tracking).
-        float yOfs = arenaHeight * 0.5f;
-        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals, yOfs);
-        if (debugVisuals) FloorGrid.Build(arenaWidth, arenaDepth);
-        SpawnBall(yOfs);
+        float yOfs   = arenaHeight * 0.5f;
+        float zCenter = (arenaZMin + arenaZMax) * 0.5f;
+        ArenaBuilder.Build(arenaWidth, arenaHeight, arenaZMin, arenaZMax, debugVisuals, yOfs);
+        if (debugVisuals) FloorGrid.Build(arenaWidth, arenaZMin, arenaZMax);
+        SpawnBall(yOfs, zCenter);
         SpawnPaddle();
     }
 
@@ -76,9 +79,10 @@ public class Phase0Bootstrap : MonoBehaviour
         if (useVR)
             SetupXROrigin(cam);
         else
-            // Desktop: start at arena centre height so fly-cam begins inside the room.
+            // Desktop: start at arena centre so fly-cam begins inside the room.
             cam.transform.SetPositionAndRotation(
-                new Vector3(0, arenaHeight * 0.5f, 0), Quaternion.identity);
+                new Vector3(0, arenaHeight * 0.5f, (arenaZMin + arenaZMax) * 0.5f),
+                Quaternion.identity);
     }
 
     // Creates the XR Origin hierarchy Unity 6 + OpenXR requires for correct head tracking.
@@ -115,12 +119,11 @@ public class Phase0Bootstrap : MonoBehaviour
             "<XRHMD>/centerEyeRotation", expectedControlType: "Quaternion"));
     }
 
-    void SpawnBall(float yOfs)
+    void SpawnBall(float yOfs, float zCenter)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = "Ball";
-        // Spawn at arena centre height (yOfs) so the ball starts in the middle of the room.
-        go.transform.position   = new Vector3(0f, yOfs, 0f);
+        go.transform.position   = new Vector3(0f, yOfs, zCenter);
         go.transform.localScale = Vector3.one * 0.08f;
 
         var renderer = go.GetComponent<Renderer>();

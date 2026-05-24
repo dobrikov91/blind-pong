@@ -4,12 +4,16 @@ using UnityEngine;
 // debugVisible = true renders each panel as a tinted cube so you can see the room.
 public static class ArenaBuilder
 {
-    public static void Build(float width = 6f, float height = 4f, float depth = 6f,
+    public static void Build(float width, float height, float zMin, float zMax,
                              bool debugVisible = false, float yOffset = 0f)
     {
+        float depth   = zMax - zMin;
+        float zCenter = (zMin + zMax) * 0.5f;
+
         var root = new GameObject("Arena");
         // yOffset lifts the whole room so its floor panel lands at world y=0 (real floor).
-        root.transform.position = new Vector3(0, yOffset, 0);
+        // zCenter shifts it along Z so the asymmetric depth range is placed correctly.
+        root.transform.position = new Vector3(0, yOffset, zCenter);
         var mat  = MakeBouncyMaterial();
 
         float hw = width  * 0.5f;
