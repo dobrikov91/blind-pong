@@ -33,8 +33,10 @@ public class Paddle : MonoBehaviour
     InputAction posAction;
     InputAction rotAction;
     InputAction respawnAction;
+    InputAction toggleBallAction;
 
     BallController ball;
+    Renderer       ballRenderer;
 
     void Awake()
     {
@@ -60,11 +62,18 @@ public class Paddle : MonoBehaviour
         respawnAction.AddBinding("<XRController>{RightHand}/primaryButton");
         respawnAction.AddBinding("<Keyboard>/r");
         respawnAction.Enable();
+
+        // B button on Quest controller; V key on desktop.
+        toggleBallAction = new InputAction("ToggleBall", InputActionType.Button);
+        toggleBallAction.AddBinding("<XRController>{RightHand}/secondaryButton");
+        toggleBallAction.AddBinding("<Keyboard>/v");
+        toggleBallAction.Enable();
     }
 
     void Start()
     {
         ball = Object.FindFirstObjectByType<BallController>();
+        if (ball != null) ballRenderer = ball.GetComponent<Renderer>();
         prevSIMode = spaceInvadersMode;
         SyncGeometry();
     }
@@ -83,13 +92,20 @@ public class Paddle : MonoBehaviour
             prevSIMode = spaceInvadersMode;
         }
 
-        if (!respawnAction.WasPressedThisFrame()) return;
-        if (ball == null)
-            ball = Object.FindFirstObjectByType<BallController>();
-        if (ball == null) return;
+        if (respawnAction.WasPressedThisFrame())
+        {
+            if (ball == null) ball = Object.FindFirstObjectByType<BallController>();
+            if (ball != null)
+                ball.Respawn(transform.position + transform.up * 0.4f);
+        }
 
-        // Spawn at the tip of the racket head so the player can serve immediately.
-        ball.Respawn(transform.position + transform.up * 0.4f);
+        if (toggleBallAction.WasPressedThisFrame())
+        {
+            if (ballRenderer == null && ball != null)
+                ballRenderer = ball.GetComponent<Renderer>();
+            if (ballRenderer != null)
+                ballRenderer.enabled = !ballRenderer.enabled;
+        }
     }
 
     void OnDestroy()
@@ -97,6 +113,7 @@ public class Paddle : MonoBehaviour
         posAction?.Dispose();
         rotAction?.Dispose();
         respawnAction?.Dispose();
+        toggleBallAction?.Dispose();
     }
 
     void FixedUpdate()
