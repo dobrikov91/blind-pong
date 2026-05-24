@@ -18,12 +18,17 @@ public class Paddle : MonoBehaviour
     // to Z). Hand controls Y and Z only; X is locked to 0. Rotation is fixed.
     public bool spaceInvadersMode = true;
 
+    // Assigned by Phase0Bootstrap — toggled when mode changes
+    [HideInInspector] public GameObject normalGeometry;
+    [HideInInspector] public GameObject siGeometry;
+
     // Read by BallController on contact
     public Vector3 Velocity { get; private set; }
 
     Rigidbody  rb;
     Transform  cam;
     Vector3    prevPos;
+    bool       prevSIMode;
 
     InputAction posAction;
     InputAction rotAction;
@@ -60,10 +65,24 @@ public class Paddle : MonoBehaviour
     void Start()
     {
         ball = Object.FindFirstObjectByType<BallController>();
+        prevSIMode = spaceInvadersMode;
+        SyncGeometry();
+    }
+
+    void SyncGeometry()
+    {
+        normalGeometry?.SetActive(!spaceInvadersMode);
+        siGeometry?.SetActive(spaceInvadersMode);
     }
 
     void Update()
     {
+        if (spaceInvadersMode != prevSIMode)
+        {
+            SyncGeometry();
+            prevSIMode = spaceInvadersMode;
+        }
+
         if (!respawnAction.WasPressedThisFrame()) return;
         if (ball == null)
             ball = Object.FindFirstObjectByType<BallController>();

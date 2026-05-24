@@ -167,42 +167,64 @@ public class Phase0Bootstrap : MonoBehaviour
 
     void SpawnPaddle()
     {
-        var root = new GameObject("Paddle");
+        var root   = new GameObject("Paddle");
         root.AddComponent<Rigidbody>(); // Paddle.Awake configures kinematic
-        root.AddComponent<Paddle>();
+        var paddle = root.AddComponent<Paddle>();
 
-        // Racket head — flat box, this is what the ball hits
+        var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                  ?? Shader.Find("Unlit/Color");
+
+        // ── Normal-mode geometry (racket head + handle) ──────────────────────
+        var normalGeo = new GameObject("NormalGeometry");
+        normalGeo.transform.SetParent(root.transform);
+        normalGeo.transform.localPosition = Vector3.zero;
+
         var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
         head.name = "RacketHead";
-        head.transform.SetParent(root.transform);
+        head.transform.SetParent(normalGeo.transform);
         head.transform.localPosition = new Vector3(0f, 0.18f, 0f);
         head.transform.localScale    = new Vector3(0.26f, 0.32f, 0.025f);
         head.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
 
-        // Handle — thin cylinder below the head
         var handle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         handle.name = "Handle";
-        handle.transform.SetParent(root.transform);
+        handle.transform.SetParent(normalGeo.transform);
         handle.transform.localPosition = new Vector3(0f, -0.12f, 0f);
         handle.transform.localScale    = new Vector3(0.03f, 0.13f, 0.03f);
         handle.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
-        // Handle has no game-play collider — only the head should register hits
-        Destroy(handle.GetComponent<Collider>());
+        Destroy(handle.GetComponent<Collider>()); // only head registers hits
 
+        // ── Space-invaders geometry (centered square, no handle) ──────────────
+        var siGeo = new GameObject("SIGeometry");
+        siGeo.transform.SetParent(root.transform);
+        siGeo.transform.localPosition = Vector3.zero;
+
+        var siPad = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        siPad.name = "SIPad";
+        siPad.transform.SetParent(siGeo.transform);
+        siPad.transform.localPosition = Vector3.zero;
+        siPad.transform.localScale    = new Vector3(0.6f, 0.6f, 0.025f);
+        siPad.AddComponent<SurfaceType>().kind = SurfaceType.Kind.Paddle;
+
+        // ── Visuals ───────────────────────────────────────────────────────────
         if (debugVisuals)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit")
-                      ?? Shader.Find("Unlit/Color");
             head.GetComponent<Renderer>().sharedMaterial =
                 new Material(shader) { color = new Color(0.85f, 0.85f, 0.15f) }; // yellow
             handle.GetComponent<Renderer>().sharedMaterial =
                 new Material(shader) { color = new Color(0.45f, 0.25f, 0.08f) }; // brown
+            siPad.GetComponent<Renderer>().sharedMaterial =
+                new Material(shader) { color = new Color(0.85f, 0.85f, 0.15f) }; // yellow
         }
         else
         {
             head.GetComponent<Renderer>().enabled   = false;
             handle.GetComponent<Renderer>().enabled = false;
+            siPad.GetComponent<Renderer>().enabled  = false;
         }
+
+        paddle.normalGeometry = normalGeo;
+        paddle.siGeometry     = siGeo;
     }
 
     void EnsureListener(bool useVR)
