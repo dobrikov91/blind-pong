@@ -43,6 +43,7 @@ public class Phase0Bootstrap : MonoBehaviour
         // Lift the arena so its floor panel sits at world y=0 (real floor in Floor tracking).
         float yOfs = arenaHeight * 0.5f;
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaDepth, debugVisuals, yOfs);
+        if (debugVisuals) FloorGrid.Build(arenaWidth, arenaDepth);
         SpawnBall(yOfs);
         SpawnPaddle();
     }
