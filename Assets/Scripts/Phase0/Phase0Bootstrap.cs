@@ -25,9 +25,9 @@ using UnityEngine.InputSystem.XR;
 public class Phase0Bootstrap : MonoBehaviour
 {
     [Header("Arena dimensions (metres)")]
-    public float arenaWidth  = 6f;
-    public float arenaHeight = 4f;
-    public float arenaDepth  = 6f;
+    public float arenaWidth  = 2f;
+    public float arenaHeight = 2f;
+    public float arenaDepth  = 2f;
 
     [Header("Debug")]
     public bool debugVisuals = true;
