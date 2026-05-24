@@ -16,7 +16,7 @@ public class Paddle : MonoBehaviour
     [Header("Mode")]
     // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
     // to Z). Hand controls Y and Z only; X is locked to 0. Rotation is fixed.
-    public bool spaceInvadersMode = false;
+    public bool spaceInvadersMode = true;
 
     // Read by BallController on contact
     public Vector3 Velocity { get; private set; }
@@ -97,7 +97,7 @@ public class Paddle : MonoBehaviour
             {
                 // Lock X to 0; hand drives Y and Z only.
                 // Rotation is fixed: face perpendicular to Z, parallel to X axis.
-                targetPos = new Vector3(0f, worldPos.y, worldPos.z);
+                targetPos = new Vector3(worldPos.x, worldPos.y, worldPos.z);
                 targetRot = Quaternion.identity;
             }
             else
