@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +13,10 @@ public class Paddle : MonoBehaviour
 
     [Header("Desktop fallback")]
     public float armLength = 0.6f;
+
+    [Header("Hit flash")]
+    public Color flashColor    = Color.white;
+    public float flashDuration = 0.12f;
 
     [Header("Mode")]
     // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
@@ -37,6 +42,7 @@ public class Paddle : MonoBehaviour
 
     BallController ball;
     Renderer       ballRenderer;
+    Coroutine      flashCoroutine;
 
     void Awake()
     {
@@ -73,7 +79,11 @@ public class Paddle : MonoBehaviour
     void Start()
     {
         ball = Object.FindFirstObjectByType<BallController>();
-        if (ball != null) ballRenderer = ball.GetComponent<Renderer>();
+        if (ball != null)
+        {
+            ballRenderer = ball.GetComponent<Renderer>();
+            ball.OnBallHit += OnBallHit;
+        }
         prevSIMode = spaceInvadersMode;
         SyncGeometry();
     }
@@ -110,10 +120,36 @@ public class Paddle : MonoBehaviour
 
     void OnDestroy()
     {
+        if (ball != null) ball.OnBallHit -= OnBallHit;
         posAction?.Dispose();
         rotAction?.Dispose();
         respawnAction?.Dispose();
         toggleBallAction?.Dispose();
+    }
+
+    void OnBallHit(SurfaceType.Kind kind, Vector3 _)
+    {
+        if (kind != SurfaceType.Kind.Paddle) return;
+        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
+        flashCoroutine = StartCoroutine(FlashRoutine());
+    }
+
+    IEnumerator FlashRoutine()
+    {
+        var renderers = GetComponentsInChildren<Renderer>();
+        var original  = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            original[i]           = renderers[i].material.color;
+            renderers[i].material.color = flashColor;
+        }
+
+        yield return new WaitForSeconds(flashDuration);
+
+        for (int i = 0; i < renderers.Length; i++)
+            renderers[i].material.color = original[i];
+
+        flashCoroutine = null;
     }
 
     void FixedUpdate()
