@@ -43,7 +43,7 @@ public class BallController : MonoBehaviour
         Vector3 reflected = Vector3.Reflect(rb.linearVelocity, normal);
 
         // Add paddle swing velocity: feel is tuned via Paddle.velocityMultiplier
-        var paddle = col.gameObject.GetComponentInParent<Paddle>();
+        var paddle = col.collider.gameObject.GetComponentInParent<Paddle>();
         if (paddle != null)
             reflected += paddle.Velocity * paddle.velocityMultiplier;
 
@@ -61,8 +61,8 @@ public class BallController : MonoBehaviour
         // Move the ball clear of the surface so it can't re-collide next physics step.
         rb.position += normal * 0.005f;
 
-        var surface = col.gameObject.GetComponent<SurfaceType>()
-                   ?? col.gameObject.GetComponentInParent<SurfaceType>();
+        var surface = col.collider.gameObject.GetComponent<SurfaceType>()
+                   ?? col.collider.gameObject.GetComponentInParent<SurfaceType>();
         OnBallHit?.Invoke(
             surface != null ? surface.kind : SurfaceType.Kind.Wall,
             contact.point

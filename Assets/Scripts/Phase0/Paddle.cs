@@ -165,18 +165,24 @@ public class Paddle : MonoBehaviour
 
     IEnumerator FlashRoutine()
     {
-        var renderers = GetComponentsInChildren<Renderer>();
-        var original  = new Color[renderers.Length];
+        var renderers      = GetComponentsInChildren<Renderer>(includeInactive: true);
+        var originalColors = new Color[renderers.Length];
+        var wasEnabled     = new bool[renderers.Length];
         for (int i = 0; i < renderers.Length; i++)
         {
-            original[i] = GetColor(renderers[i].material);
+            wasEnabled[i]     = renderers[i].enabled;
+            renderers[i].enabled = true;
+            originalColors[i] = GetColor(renderers[i].material);
             SetColor(renderers[i].material, flashColor);
         }
 
         yield return new WaitForSeconds(flashDuration);
 
         for (int i = 0; i < renderers.Length; i++)
-            SetColor(renderers[i].material, original[i]);
+        {
+            SetColor(renderers[i].material, originalColors[i]);
+            renderers[i].enabled = wasEnabled[i];
+        }
 
         flashCoroutine = null;
     }
