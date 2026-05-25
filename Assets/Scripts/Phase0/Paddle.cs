@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
 
 // Tracks the right-hand XR controller in VR, or floats in front of the
 // camera on desktop. Move the Rigidbody kinematically so physics can
@@ -17,6 +19,11 @@ public class Paddle : MonoBehaviour
     [Header("Hit flash")]
     public Color flashColor    = Color.white;
     public float flashDuration = 0.12f;
+
+    [Header("Proximity haptics")]
+    public float hapticMaxDistance  = 2.0f; // buzz starts at this distance (metres)
+    public float hapticMinDistance  = 0.15f; // full intensity at this distance
+    public float hapticMaxAmplitude = 0.6f;  // amplitude at closest (0–1)
 
     [Header("Mode")]
     // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
@@ -43,6 +50,8 @@ public class Paddle : MonoBehaviour
     BallController ball;
     Renderer       ballRenderer;
     Coroutine      flashCoroutine;
+
+    readonly List<InputDevice> hapticDevices = new List<InputDevice>();
 
     void Awake()
     {
@@ -208,5 +217,23 @@ public class Paddle : MonoBehaviour
 
         rb.MovePosition(targetPos);
         rb.MoveRotation(targetRot);
+
+        if (inVR) SendProximityHaptics(targetPos);
+    }
+
+    void SendProximityHaptics(Vector3 paddlePos)
+    {
+        if (ball == null) return;
+
+        float dist = Vector3.Distance(ball.transform.position, paddlePos);
+        if (dist >= hapticMaxDistance) return;
+
+        float t         = 1f - Mathf.InverseLerp(hapticMinDistance, hapticMaxDistance, dist);
+        float amplitude = t * hapticMaxAmplitude;
+
+        hapticDevices.Clear();
+        InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
+        foreach (var dev in hapticDevices)
+            dev.SendHapticImpulse(0, amplitude, Time.fixedDeltaTime);
     }
 }
