@@ -139,8 +139,15 @@ public class Paddle : MonoBehaviour
     void OnBallHit(SurfaceType.Kind kind, Vector3 _)
     {
         if (kind != SurfaceType.Kind.Paddle) return;
+
         if (flashCoroutine != null) StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(FlashRoutine());
+
+        // Strong one-shot buzz on contact
+        hapticDevices.Clear();
+        UnityEngine.XR.InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
+        foreach (var dev in hapticDevices)
+            dev.SendHapticImpulse(0, 1.0f, 0.18f);
     }
 
     // URP Unlit uses _BaseColor; Built-in Unlit/Color uses _Color.

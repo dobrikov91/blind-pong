@@ -64,7 +64,7 @@ public class BallAudio : MonoBehaviour
             _                             => wallHit,
         };
         if (clip != null)
-            bounceSource.PlayOneShot(clip);
+            bounceSource.PlayOneShot(clip, surface == SurfaceType.Kind.Paddle ? 1.5f : 1.0f);
     }
 
     public void StartWhoosh(AudioClip clip)

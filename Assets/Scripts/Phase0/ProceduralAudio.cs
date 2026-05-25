@@ -23,11 +23,13 @@ public static class ProceduralAudio
     });
 
     // Pitched pop with downward glide — most important to distinguish (paddle)
-    public static AudioClip PaddlePop() => Synth("PaddlePop", 0.07f, i =>
+    // Linear chirp: phase = integral of ω(t) = 2π*(f0*t + (f1-f0)*t²/(2*T))
+    public static AudioClip PaddlePop() => Synth("PaddlePop", 0.14f, i =>
     {
-        float t   = (float)i / Rate;
-        float freq = 1400f + (500f - 1400f) * (t / 0.07f); // 1400→500 Hz
-        return MathF.Sin(MathF.PI * 2f * freq * t) * MathF.Exp(-t * 45f);
+        float t    = (float)i / Rate;
+        const float dur = 0.14f, f0 = 1400f, f1 = 220f;
+        float phase = MathF.PI * 2f * (f0 * t + (f1 - f0) * t * t / (2f * dur));
+        return MathF.Sin(phase) * MathF.Exp(-t * 22f);
     });
 
     // Bright ping — far (front) wall, high and sharp so it reads as "distant"
