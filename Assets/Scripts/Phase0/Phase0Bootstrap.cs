@@ -176,13 +176,12 @@ public class Phase0Bootstrap : MonoBehaviour
             BallSoundMode.AudioFile => customBallSound ?? ProceduralAudio.WhiteNoise(),
             _                       => ProceduralAudio.WhiteNoise(),
         };
-        // All procedural clips need a volume boost to stay audible through 3D logarithmic
+        // Procedural clips need a volume boost to stay audible through 3D logarithmic
         // rolloff at typical play distances. Custom files are left at 1× — unknown amplitude.
-        if (ballSoundMode != BallSoundMode.AudioFile)
-            audio.whooshVolumeScale = 3f;
-        else
-            audio.whooshVolumeScale = 13f;
-        audio.StartWhoosh(whoosh);
+        bool isCustomFile = ballSoundMode == BallSoundMode.AudioFile && customBallSound != null;
+        audio.whooshVolumeScale = isCustomFile ? 13f : 3f;
+        // Custom audio files play at real speed — pitch modulation and doppler warp real recordings.
+        audio.StartWhoosh(whoosh, pitchModulate: !isCustomFile);
     }
 
     void SpawnPaddle()

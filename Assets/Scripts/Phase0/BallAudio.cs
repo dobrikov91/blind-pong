@@ -20,9 +20,10 @@ public class BallAudio : MonoBehaviour
     [Header("Whoosh envelope")]
     [Range(0f, 1f)] public float whooshMinVolume    = 0.08f;  // always audible
     [Range(0f, 1f)] public float whooshMaxVolume    = 0.35f;
-    public float whooshPitchMin   = 0.6f;
-    public float whooshPitchMax   = 2.0f;
-    public float whooshVolumeScale = 1f; // set higher for pure-sine to compensate narrow-band quietness
+    public float whooshPitchMin    = 0.6f;
+    public float whooshPitchMax    = 2.0f;
+    public float whooshVolumeScale = 1f;
+    public bool  whooshPitchModulate = true; // false for custom audio files — keeps pitch at 1×
 
     AudioSource bounceSource;
     AudioSource whooshSource;
@@ -51,7 +52,7 @@ public class BallAudio : MonoBehaviour
         float distT  = Mathf.Clamp01(1f - Vector3.Distance(transform.position, listener.position) / 12f);
 
         whooshSource.volume = Mathf.Clamp01(Mathf.Lerp(whooshMinVolume, whooshMaxVolume, speedT) * distT * whooshVolumeScale);
-        whooshSource.pitch  = Mathf.Lerp(whooshPitchMin, whooshPitchMax, speedT);
+        whooshSource.pitch  = whooshPitchModulate ? Mathf.Lerp(whooshPitchMin, whooshPitchMax, speedT) : 1f;
     }
 
     void HandleHit(SurfaceType.Kind surface, Vector3 _)
@@ -68,9 +69,11 @@ public class BallAudio : MonoBehaviour
             bounceSource.PlayOneShot(clip, surface == SurfaceType.Kind.Paddle ? 1.5f : 1.0f);
     }
 
-    public void StartWhoosh(AudioClip clip)
+    public void StartWhoosh(AudioClip clip, bool pitchModulate = true)
     {
-        whooshSource.clip = clip;
+        whooshPitchModulate       = pitchModulate;
+        whooshSource.dopplerLevel = pitchModulate ? 0.5f : 0f;
+        whooshSource.clip         = clip;
         whooshSource.Play();
     }
 
