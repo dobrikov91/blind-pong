@@ -107,9 +107,9 @@ All parameters are exposed in the Unity Inspector. Change them at runtime withou
 | Phase | Status | Description |
 |---|---|---|
 | 0 | ✅ Done | Audio localization PoC — black scene, bouncing ball, HRTF, paddle |
-| 1 | Planned | Full Unity + Meta XR SDK + Steam Audio stack |
-| 2 | Planned | Physics refinement, arena tuning |
-| 3 | ✅ Done | Spatial audio system — per-event sounds, whoosh, proximity haptics |
-| 4 | Planned | Game loop — solo rally mode, audio-only UI, training mode |
+| 1 | ✅ Done | Unity 6 + OpenXR + Meta XR SDK + Steam Audio spatializer |
+| 2 | ✅ Done | Ball physics, arena colliders, paddle with velocity transfer |
+| 3 | ⚠️ Mostly done | Per-event sounds, whoosh, proximity haptics — **Steam Audio room simulation (reverb/reflections) not yet configured** |
+| 4 | Planned | Game loop — solo rally mode, audio-only UI, training mode with ghost visual |
 | 5 | Planned | Multiplayer (high risk, likely post-v1) |
 | 6 | Planned | Polish — real sound assets, difficulty scaling, HRTF calibration |
