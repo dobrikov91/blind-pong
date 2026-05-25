@@ -218,11 +218,24 @@ public class Paddle : MonoBehaviour
         }
         else
         {
-            // Desktop: paddle hangs at arm's length, slightly below eye level.
-            targetPos = cam.position
-                      + cam.forward * armLength
-                      + cam.up * -0.15f;
-            targetRot = spaceInvadersMode ? Quaternion.identity : cam.rotation;
+            if (spaceInvadersMode)
+            {
+                // Mouse cursor controls paddle X/Y: project mouse screen position
+                // into world space at armLength depth from the camera.
+                var mouse = Mouse.current;
+                Vector2 screenPos = mouse != null
+                    ? mouse.position.ReadValue()
+                    : new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y, 0f));
+                targetPos = ray.GetPoint(armLength);
+                targetRot = Quaternion.identity;
+            }
+            else
+            {
+                // Free-look mode: paddle hangs at arm's length, rotates with camera.
+                targetPos = cam.position + cam.forward * armLength + cam.up * -0.15f;
+                targetRot = cam.rotation;
+            }
         }
 
         Velocity = (targetPos - prevPos) / Time.fixedDeltaTime;
