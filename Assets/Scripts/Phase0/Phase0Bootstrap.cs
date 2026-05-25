@@ -180,6 +180,8 @@ public class Phase0Bootstrap : MonoBehaviour
         // rolloff at typical play distances. Custom files are left at 1× — unknown amplitude.
         if (ballSoundMode != BallSoundMode.AudioFile)
             audio.whooshVolumeScale = 3f;
+        else
+            audio.whooshVolumeScale = 13f;
         audio.StartWhoosh(whoosh);
     }
 
