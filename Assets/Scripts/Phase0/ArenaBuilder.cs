@@ -54,6 +54,14 @@ public static class ArenaBuilder
         if (visible) go.transform.localScale = colSize;
 
         go.AddComponent<SurfaceType>().kind = kind;
+
+        if (kind == SurfaceType.Kind.WallFront)
+        {
+            var flash = go.AddComponent<FlashEffect>();
+            flash.triggerOn    = SurfaceType.Kind.WallFront;
+            flash.flashColor   = new Color(0.2f, 1f, 0.4f); // bright green — distinct from paddle white
+            flash.flashDuration = 0.18f;
+        }
     }
 
     // Dark tints — visible but not glaring; distinguishes floor/ceiling from walls.

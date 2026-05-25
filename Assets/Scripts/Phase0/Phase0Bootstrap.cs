@@ -247,6 +247,11 @@ public class Phase0Bootstrap : MonoBehaviour
 
         paddle.normalGeometry = normalGeo;
         paddle.siGeometry     = siGeo;
+
+        var flash = root.AddComponent<FlashEffect>();
+        flash.triggerOn    = SurfaceType.Kind.Paddle;
+        flash.flashColor   = Color.white;
+        flash.flashDuration = 0.12f;
     }
 
     void EnsureListener(bool useVR)

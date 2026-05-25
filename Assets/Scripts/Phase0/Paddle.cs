@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -16,14 +15,10 @@ public class Paddle : MonoBehaviour
     [Header("Desktop fallback")]
     public float armLength = 0.6f;
 
-    [Header("Hit flash")]
-    public Color flashColor    = Color.white;
-    public float flashDuration = 0.12f;
-
     [Header("Proximity haptics")]
-    public float hapticMaxDistance  = 2.0f; // buzz starts at this distance (metres)
-    public float hapticMinDistance  = 0.15f; // full intensity at this distance
-    public float hapticMaxAmplitude = 0.6f;  // amplitude at closest (0–1)
+    public float hapticMaxDistance  = 2.0f;
+    public float hapticMinDistance  = 0.15f;
+    public float hapticMaxAmplitude = 0.6f;
 
     [Header("Mode")]
     // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
@@ -49,11 +44,6 @@ public class Paddle : MonoBehaviour
 
     BallController ball;
     Renderer       ballRenderer;
-    Coroutine      flashCoroutine;
-
-    Renderer[] paddleRenderers;
-    Color[]    originalColors;
-    bool[]     originalEnabled;
 
     readonly List<UnityEngine.XR.InputDevice> hapticDevices = new List<UnityEngine.XR.InputDevice>();
 
@@ -99,15 +89,6 @@ public class Paddle : MonoBehaviour
         }
         prevSIMode = spaceInvadersMode;
         SyncGeometry();
-
-        paddleRenderers = GetComponentsInChildren<Renderer>(includeInactive: true);
-        originalColors  = new Color[paddleRenderers.Length];
-        originalEnabled = new bool[paddleRenderers.Length];
-        for (int i = 0; i < paddleRenderers.Length; i++)
-        {
-            originalColors[i]  = GetColor(paddleRenderers[i].material);
-            originalEnabled[i] = paddleRenderers[i].enabled;
-        }
     }
 
     void SyncGeometry()
@@ -153,46 +134,11 @@ public class Paddle : MonoBehaviour
     {
         if (kind != SurfaceType.Kind.Paddle) return;
 
-        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
-        flashCoroutine = StartCoroutine(FlashRoutine());
-
-        // Strong one-shot buzz on contact
+        // Strong one-shot buzz on contact; FlashEffect handles the visual flash.
         hapticDevices.Clear();
         UnityEngine.XR.InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
         foreach (var dev in hapticDevices)
             dev.SendHapticImpulse(0, 1.0f, 0.18f);
-    }
-
-    // URP Unlit uses _BaseColor; Built-in Unlit/Color uses _Color.
-    static readonly int BaseProp = Shader.PropertyToID("_BaseColor");
-    static readonly int ColProp  = Shader.PropertyToID("_Color");
-
-    static Color GetColor(Material m)
-        => m.HasProperty(BaseProp) ? m.GetColor(BaseProp) : m.GetColor(ColProp);
-
-    static void SetColor(Material m, Color c)
-    {
-        if (m.HasProperty(BaseProp)) m.SetColor(BaseProp, c);
-        if (m.HasProperty(ColProp))  m.SetColor(ColProp,  c);
-    }
-
-    IEnumerator FlashRoutine()
-    {
-        for (int i = 0; i < paddleRenderers.Length; i++)
-        {
-            paddleRenderers[i].enabled = true;
-            SetColor(paddleRenderers[i].material, flashColor);
-        }
-
-        yield return new WaitForSeconds(flashDuration);
-
-        for (int i = 0; i < paddleRenderers.Length; i++)
-        {
-            SetColor(paddleRenderers[i].material, originalColors[i]);
-            paddleRenderers[i].enabled = originalEnabled[i];
-        }
-
-        flashCoroutine = null;
     }
 
     void FixedUpdate()
