@@ -71,7 +71,7 @@ public static class ProceduralAudio
     {
         int     n    = Mathf.CeilToInt(Rate * duration);
         float[] data = new float[n];
-        var     rng  = new Random(42); // seeded so the loop is deterministic
+        var     rng  = new System.Random(42); // seeded so the loop is deterministic
         float b0=0, b1=0, b2=0, b3=0, b4=0, b5=0;
 
         for (int i = 0; i < n; i++)

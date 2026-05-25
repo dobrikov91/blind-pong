@@ -18,10 +18,11 @@ public class BallAudio : MonoBehaviour
     public AudioClip backWallHit;
 
     [Header("Whoosh envelope")]
-    [Range(0f, 1f)] public float whooshMinVolume = 0.08f;  // always audible
-    [Range(0f, 1f)] public float whooshMaxVolume = 0.35f;
-    public float whooshPitchMin = 0.6f;
-    public float whooshPitchMax = 2.0f;
+    [Range(0f, 1f)] public float whooshMinVolume    = 0.08f;  // always audible
+    [Range(0f, 1f)] public float whooshMaxVolume    = 0.35f;
+    public float whooshPitchMin   = 0.6f;
+    public float whooshPitchMax   = 2.0f;
+    public float whooshVolumeScale = 1f; // set higher for pure-sine to compensate narrow-band quietness
 
     AudioSource bounceSource;
     AudioSource whooshSource;
@@ -49,7 +50,7 @@ public class BallAudio : MonoBehaviour
         float speedT = Mathf.InverseLerp(ball.minSpeed, ball.maxSpeed, ball.Speed);
         float distT  = Mathf.Clamp01(1f - Vector3.Distance(transform.position, listener.position) / 12f);
 
-        whooshSource.volume = Mathf.Lerp(whooshMinVolume, whooshMaxVolume, speedT) * distT;
+        whooshSource.volume = Mathf.Clamp01(Mathf.Lerp(whooshMinVolume, whooshMaxVolume, speedT) * distT * whooshVolumeScale);
         whooshSource.pitch  = Mathf.Lerp(whooshPitchMin, whooshPitchMax, speedT);
     }
 

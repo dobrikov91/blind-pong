@@ -176,6 +176,10 @@ public class Phase0Bootstrap : MonoBehaviour
             BallSoundMode.AudioFile => customBallSound,
             _                       => ProceduralAudio.WhiteNoise(),
         };
+        // Pure sine is perceptually much quieter than noise at the same RMS
+        // because 3D rolloff applies to a narrow-band signal with no masking benefit.
+        if (ballSoundMode == BallSoundMode.PureSine)
+            audio.whooshVolumeScale = 3f;
         if (whoosh != null) audio.StartWhoosh(whoosh);
     }
 
