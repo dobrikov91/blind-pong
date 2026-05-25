@@ -51,6 +51,10 @@ public class Paddle : MonoBehaviour
     Renderer       ballRenderer;
     Coroutine      flashCoroutine;
 
+    Renderer[] paddleRenderers;
+    Color[]    originalColors;
+    bool[]     originalEnabled;
+
     readonly List<UnityEngine.XR.InputDevice> hapticDevices = new List<UnityEngine.XR.InputDevice>();
 
     void Awake()
@@ -95,6 +99,15 @@ public class Paddle : MonoBehaviour
         }
         prevSIMode = spaceInvadersMode;
         SyncGeometry();
+
+        paddleRenderers = GetComponentsInChildren<Renderer>(includeInactive: true);
+        originalColors  = new Color[paddleRenderers.Length];
+        originalEnabled = new bool[paddleRenderers.Length];
+        for (int i = 0; i < paddleRenderers.Length; i++)
+        {
+            originalColors[i]  = GetColor(paddleRenderers[i].material);
+            originalEnabled[i] = paddleRenderers[i].enabled;
+        }
     }
 
     void SyncGeometry()
@@ -165,23 +178,18 @@ public class Paddle : MonoBehaviour
 
     IEnumerator FlashRoutine()
     {
-        var renderers      = GetComponentsInChildren<Renderer>(includeInactive: true);
-        var originalColors = new Color[renderers.Length];
-        var wasEnabled     = new bool[renderers.Length];
-        for (int i = 0; i < renderers.Length; i++)
+        for (int i = 0; i < paddleRenderers.Length; i++)
         {
-            wasEnabled[i]     = renderers[i].enabled;
-            renderers[i].enabled = true;
-            originalColors[i] = GetColor(renderers[i].material);
-            SetColor(renderers[i].material, flashColor);
+            paddleRenderers[i].enabled = true;
+            SetColor(paddleRenderers[i].material, flashColor);
         }
 
         yield return new WaitForSeconds(flashDuration);
 
-        for (int i = 0; i < renderers.Length; i++)
+        for (int i = 0; i < paddleRenderers.Length; i++)
         {
-            SetColor(renderers[i].material, originalColors[i]);
-            renderers[i].enabled = wasEnabled[i];
+            SetColor(paddleRenderers[i].material, originalColors[i]);
+            paddleRenderers[i].enabled = originalEnabled[i];
         }
 
         flashCoroutine = null;
