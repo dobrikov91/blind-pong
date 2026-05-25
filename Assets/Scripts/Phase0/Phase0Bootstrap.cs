@@ -24,12 +24,18 @@ using UnityEngine.InputSystem.XR;
 
 public class Phase0Bootstrap : MonoBehaviour
 {
+    public enum BallSoundMode { WhiteNoise, PinkNoise, PureSine, AudioFile }
+
     [Header("Arena dimensions (metres)")]
     public float arenaWidth  = 1.5f;
     public float arenaHeight = 1.5f;
     [Header("Arena Z range (metres)")]
     public float arenaZMin   = -1f;
     public float arenaZMax   =  5f;
+
+    [Header("Ball whoosh sound")]
+    public BallSoundMode ballSoundMode   = BallSoundMode.WhiteNoise;
+    public AudioClip     customBallSound; // drag an audio asset here when mode = AudioFile
 
     [Header("Debug")]
     public bool debugVisuals = true;
@@ -162,7 +168,15 @@ public class Phase0Bootstrap : MonoBehaviour
         audio.paddleHit    = ProceduralAudio.PaddlePop();
         audio.frontWallHit = ProceduralAudio.FrontWallPing();
         audio.backWallHit  = ProceduralAudio.BackWallThock();
-        audio.StartWhoosh(ProceduralAudio.Whoosh());
+
+        AudioClip whoosh = ballSoundMode switch
+        {
+            BallSoundMode.PinkNoise => ProceduralAudio.PinkNoise(),
+            BallSoundMode.PureSine  => ProceduralAudio.PureSine(),
+            BallSoundMode.AudioFile => customBallSound,
+            _                       => ProceduralAudio.WhiteNoise(),
+        };
+        if (whoosh != null) audio.StartWhoosh(whoosh);
     }
 
     void SpawnPaddle()
