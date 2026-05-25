@@ -46,19 +46,14 @@ public static class ProceduralAudio
         return MathF.Sin(MathF.PI * 2f * 320f * t) * MathF.Exp(-t * 40f);
     });
 
-    // Low-pass filtered noise for looping ball-in-flight whoosh.
+    // White noise for looping ball-in-flight whoosh.
     // BallAudio modulates pitch and volume so this just needs a plausible loop.
     public static AudioClip WhiteNoise(float duration = 2f)
     {
         int     n    = Mathf.CeilToInt(Rate * duration);
         float[] data = new float[n];
-        float   prev = 0f;
-
         for (int i = 0; i < n; i++)
-        {
-            prev   = Mathf.Lerp(prev, UnityEngine.Random.Range(-1f, 1f), 0.04f);
-            data[i] = prev;
-        }
+            data[i] = UnityEngine.Random.Range(-1f, 1f);
 
         var clip = AudioClip.Create("WhiteNoise", n, 1, Rate, false);
         clip.SetData(data, 0);
