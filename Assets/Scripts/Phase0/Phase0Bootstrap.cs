@@ -46,6 +46,9 @@ public class Phase0Bootstrap : MonoBehaviour
 
     void Awake()
     {
+        Application.targetFrameRate = 120;
+        QualitySettings.vSyncCount  = 0; // vSync overrides targetFrameRate if non-zero
+
         // Build the static world first — no VR dependency yet.
         SetupRenderSettings();
         // Lift the arena so its floor panel sits at world y=0 (real floor in Floor tracking).
