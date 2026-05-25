@@ -51,7 +51,7 @@ public class Paddle : MonoBehaviour
     Renderer       ballRenderer;
     Coroutine      flashCoroutine;
 
-    readonly List<InputDevice> hapticDevices = new List<InputDevice>();
+    readonly List<UnityEngine.XR.InputDevice> hapticDevices = new List<UnityEngine.XR.InputDevice>();
 
     void Awake()
     {
@@ -232,7 +232,7 @@ public class Paddle : MonoBehaviour
         float amplitude = t * hapticMaxAmplitude;
 
         hapticDevices.Clear();
-        InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
+        UnityEngine.XR.InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
         foreach (var dev in hapticDevices)
             dev.SendHapticImpulse(0, amplitude, Time.fixedDeltaTime);
     }
