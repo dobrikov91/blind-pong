@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -16,19 +15,18 @@ public class Paddle : MonoBehaviour
     [Header("Desktop fallback")]
     public float armLength = 0.6f;
 
-    [Header("Hit flash")]
-    public Color flashColor    = Color.white;
-    public float flashDuration = 0.12f;
-
     [Header("Proximity haptics")]
-    public float hapticMaxDistance  = 2.0f; // buzz starts at this distance (metres)
-    public float hapticMinDistance  = 0.15f; // full intensity at this distance
-    public float hapticMaxAmplitude = 0.6f;  // amplitude at closest (0–1)
+    public float hapticMaxDistance  = 2.0f;
+    public float hapticMinDistance  = 0.15f;
+    public float hapticMaxAmplitude = 0.6f;
 
     [Header("Mode")]
     // Space-invaders mode: paddle is always parallel to the X axis (face perpendicular
     // to Z). Hand controls Y and Z only; X is locked to 0. Rotation is fixed.
     public bool spaceInvadersMode = true;
+
+    // Free-play A-button respawn; disabled when RallyGame owns the serve button.
+    public bool respawnEnabled = true;
 
     // Assigned by Phase0Bootstrap — toggled when mode changes
     [HideInInspector] public GameObject normalGeometry;
@@ -49,7 +47,6 @@ public class Paddle : MonoBehaviour
 
     BallController ball;
     Renderer       ballRenderer;
-    Coroutine      flashCoroutine;
 
     readonly List<UnityEngine.XR.InputDevice> hapticDevices = new List<UnityEngine.XR.InputDevice>();
 
@@ -111,7 +108,7 @@ public class Paddle : MonoBehaviour
             prevSIMode = spaceInvadersMode;
         }
 
-        if (respawnAction.WasPressedThisFrame())
+        if (respawnEnabled && respawnAction.WasPressedThisFrame())
         {
             if (ball == null) ball = Object.FindFirstObjectByType<BallController>();
             if (ball != null)
@@ -140,51 +137,11 @@ public class Paddle : MonoBehaviour
     {
         if (kind != SurfaceType.Kind.Paddle) return;
 
-        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
-        flashCoroutine = StartCoroutine(FlashRoutine());
-
-        // Strong one-shot buzz on contact
+        // Strong one-shot buzz on contact; FlashEffect handles the visual flash.
         hapticDevices.Clear();
         UnityEngine.XR.InputDevices.GetDevicesAtXRNode(XRNode.RightHand, hapticDevices);
         foreach (var dev in hapticDevices)
             dev.SendHapticImpulse(0, 1.0f, 0.18f);
-    }
-
-    // URP Unlit uses _BaseColor; Built-in Unlit/Color uses _Color.
-    static readonly int BaseProp = Shader.PropertyToID("_BaseColor");
-    static readonly int ColProp  = Shader.PropertyToID("_Color");
-
-    static Color GetColor(Material m)
-        => m.HasProperty(BaseProp) ? m.GetColor(BaseProp) : m.GetColor(ColProp);
-
-    static void SetColor(Material m, Color c)
-    {
-        if (m.HasProperty(BaseProp)) m.SetColor(BaseProp, c);
-        if (m.HasProperty(ColProp))  m.SetColor(ColProp,  c);
-    }
-
-    IEnumerator FlashRoutine()
-    {
-        var renderers      = GetComponentsInChildren<Renderer>(includeInactive: true);
-        var originalColors = new Color[renderers.Length];
-        var wasEnabled     = new bool[renderers.Length];
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            wasEnabled[i]     = renderers[i].enabled;
-            renderers[i].enabled = true;
-            originalColors[i] = GetColor(renderers[i].material);
-            SetColor(renderers[i].material, flashColor);
-        }
-
-        yield return new WaitForSeconds(flashDuration);
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            SetColor(renderers[i].material, originalColors[i]);
-            renderers[i].enabled = wasEnabled[i];
-        }
-
-        flashCoroutine = null;
     }
 
     void FixedUpdate()
@@ -218,11 +175,24 @@ public class Paddle : MonoBehaviour
         }
         else
         {
-            // Desktop: paddle hangs at arm's length, slightly below eye level.
-            targetPos = cam.position
-                      + cam.forward * armLength
-                      + cam.up * -0.15f;
-            targetRot = spaceInvadersMode ? Quaternion.identity : cam.rotation;
+            if (spaceInvadersMode)
+            {
+                // Mouse cursor controls paddle X/Y: project mouse screen position
+                // into world space at armLength depth from the camera.
+                var mouse = Mouse.current;
+                Vector2 screenPos = mouse != null
+                    ? mouse.position.ReadValue()
+                    : new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y, 0f));
+                targetPos = ray.GetPoint(armLength);
+                targetRot = Quaternion.identity;
+            }
+            else
+            {
+                // Free-look mode: paddle hangs at arm's length, rotates with camera.
+                targetPos = cam.position + cam.forward * armLength + cam.up * -0.15f;
+                targetRot = cam.rotation;
+            }
         }
 
         Velocity = (targetPos - prevPos) / Time.fixedDeltaTime;
