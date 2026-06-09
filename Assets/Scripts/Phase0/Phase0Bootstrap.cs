@@ -37,6 +37,11 @@ public class Phase0Bootstrap : MonoBehaviour
     public BallSoundMode ballSoundMode   = BallSoundMode.WhiteNoise;
     public AudioClip     customBallSound; // drag an audio asset here when mode = AudioFile
 
+    [Header("Rally game")]
+    public bool  rallyMode          = true;
+    public float baseServeSpeed     = 2.5f;
+    public float speedRampPerReturn = 0.08f;
+
     [Header("Debug")]
     public bool debugVisuals = true;
 
@@ -57,7 +62,24 @@ public class Phase0Bootstrap : MonoBehaviour
         ArenaBuilder.Build(arenaWidth, arenaHeight, arenaZMin, arenaZMax, debugVisuals, yOfs);
         if (debugVisuals) FloorGrid.Build(arenaWidth, arenaZMin, arenaZMax);
         SpawnBall(yOfs, zCenter);
-        SpawnPaddle();
+        var paddle = SpawnPaddle();
+        if (rallyMode) SpawnRallyGame(yOfs, paddle);
+    }
+
+    void SpawnRallyGame(float yOfs, Paddle paddle)
+    {
+        var go    = new GameObject("RallyGame");
+        var rally = go.AddComponent<RallyGame>();
+
+        rally.baseServeSpeed     = baseServeSpeed;
+        rally.speedRampPerReturn = speedRampPerReturn;
+        // Hold the ball just inside the front wall at arena-centre height.
+        rally.servePoint = new Vector3(0f, yOfs, arenaZMax - 0.3f);
+        // Aim serves at the player's end of the corridor.
+        rally.targetZ    = arenaZMin + 0.5f;
+
+        // Rally mode owns the A button; disable the free-play respawn.
+        paddle.respawnEnabled = false;
     }
 
     void Start()
@@ -187,7 +209,7 @@ public class Phase0Bootstrap : MonoBehaviour
         audio.StartWhoosh(whoosh, pitchModulate: !isCustomFile);
     }
 
-    void SpawnPaddle()
+    Paddle SpawnPaddle()
     {
         var root   = new GameObject("Paddle");
         root.AddComponent<Rigidbody>(); // Paddle.Awake configures kinematic
@@ -252,6 +274,8 @@ public class Phase0Bootstrap : MonoBehaviour
         flash.triggerOn    = SurfaceType.Kind.Paddle;
         flash.flashColor   = Color.white;
         flash.flashDuration = 0.12f;
+
+        return paddle;
     }
 
     void EnsureListener(bool useVR)

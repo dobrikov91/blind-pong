@@ -25,6 +25,9 @@ public class Paddle : MonoBehaviour
     // to Z). Hand controls Y and Z only; X is locked to 0. Rotation is fixed.
     public bool spaceInvadersMode = true;
 
+    // Free-play A-button respawn; disabled when RallyGame owns the serve button.
+    public bool respawnEnabled = true;
+
     // Assigned by Phase0Bootstrap — toggled when mode changes
     [HideInInspector] public GameObject normalGeometry;
     [HideInInspector] public GameObject siGeometry;
@@ -105,7 +108,7 @@ public class Paddle : MonoBehaviour
             prevSIMode = spaceInvadersMode;
         }
 
-        if (respawnAction.WasPressedThisFrame())
+        if (respawnEnabled && respawnAction.WasPressedThisFrame())
         {
             if (ball == null) ball = Object.FindFirstObjectByType<BallController>();
             if (ball != null)

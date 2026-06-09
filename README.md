@@ -11,12 +11,24 @@ A VR ping-pong game with **zero visuals**. Black screen. You locate and hit the 
 - The controller vibrates as the ball approaches, with intensity rising the closer it gets
 - On contact: a sharp haptic burst + the paddle flashes white
 
+## Rally survival mode (default)
+
+You guard the back wall; the far wall is your opponent.
+
+1. Press **A** (Quest) / **R** (desktop) — three rising countdown beeps, then the ball serves toward you
+2. Return it with the paddle — rising jingle, +1 point, and the ball gets ~8% faster
+3. The ball bounces off the far wall and comes back — keep the rally alive
+4. Miss (ball hits the wall behind you) — descending miss tone, then your score counted out in beeps
+5. Press serve again — one more try
+
+Set `rallyMode = false` on `Phase0Bootstrap` for free play (endless bouncing, A respawns the ball).
+
 ## Controls
 
 | Input | Action |
 |---|---|
 | Move right controller / mouse | Move paddle |
-| A button / R key | Respawn ball at paddle position |
+| A button / R key | Serve (rally mode) / respawn ball at paddle (free play) |
 | B button / V key | Toggle ball visibility (debug) |
 
 ## Setup
@@ -51,6 +63,9 @@ All parameters are exposed in the Unity Inspector. Change them at runtime withou
 | `arenaZMax` | 5 m | Far edge of arena |
 | `ballSoundMode` | WhiteNoise | Continuous ball whoosh: `WhiteNoise`, `PinkNoise`, `PureSine`, or `AudioFile` |
 | `customBallSound` | — | AudioClip to use when mode is `AudioFile` (wav/mp3/ogg) |
+| `rallyMode` | true | Rally survival game loop; false = free-play endless bouncing |
+| `baseServeSpeed` | 2.5 m/s | Serve speed at the start of a rally |
+| `speedRampPerReturn` | 0.08 | Speed increase per successful return (8%) |
 | `debugVisuals` | true | Shows coloured ball, paddle, floor grid, and dim ambient light |
 | `vrMode` | false | Force VR mode (auto-detected if Quest Link is active) |
 
@@ -85,6 +100,14 @@ All parameters are exposed in the Unity Inspector. Change them at runtime withou
 | `hapticMinDistance` | 0.15 m | Full haptic intensity reached at this distance |
 | `hapticMaxAmplitude` | 0.6 | Peak haptic amplitude (0–1) during proximity ramp |
 
+### RallyGame (on RallyGame at runtime)
+
+| Parameter | Default | Description |
+|---|---|---|
+| `targetXRange` / `targetYRange` | ±0.4 / 0.8–1.6 m | Window the serve is aimed at, at the player's end |
+| `countdownInterval` | 0.7 s | Gap between countdown beeps |
+| `returnDebounce` | 0.5 s | Minimum time between counted paddle hits |
+
 ## Ball whoosh sound modes
 
 | Mode | Character |
@@ -110,6 +133,6 @@ All parameters are exposed in the Unity Inspector. Change them at runtime withou
 | 1 | ✅ Done | Unity 6 + OpenXR + Meta XR SDK + Steam Audio spatializer |
 | 2 | ✅ Done | Ball physics, arena colliders, paddle with velocity transfer |
 | 3 | ⚠️ Mostly done | Per-event sounds, whoosh, proximity haptics — **Steam Audio room simulation (reverb/reflections) not yet configured** |
-| 4 | Planned | Game loop — solo rally mode, audio-only UI, training mode with ghost visual |
+| 4 | 🔨 In progress | Game loop — **rally survival mode + beep-based audio UI done**; training mode with ghost visual remaining |
 | 5 | Planned | Multiplayer (high risk, likely post-v1) |
 | 6 | Planned | Polish — real sound assets, difficulty scaling, HRTF calibration |

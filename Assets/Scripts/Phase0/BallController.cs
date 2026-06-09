@@ -27,11 +27,14 @@ public class BallController : MonoBehaviour
 
     void Start()
     {
-        rb.linearVelocity = new Vector3(1.5f, 2f, 1.5f);
+        // Free-play kick-off; in rally mode the ball is held at the serve point instead.
+        if (!rb.isKinematic)
+            rb.linearVelocity = new Vector3(1.5f, 2f, 1.5f);
     }
 
     void FixedUpdate()
     {
+        if (rb.isKinematic) return; // held by RallyGame during serve countdown
         rb.AddForce(Physics.gravity * gravityScale, ForceMode.Acceleration);
         ClampSpeed();
     }
@@ -85,5 +88,30 @@ public class BallController : MonoBehaviour
         rb.position        = pos;
         rb.linearVelocity  = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+    }
+
+    // Freeze the ball at a position (e.g. held at the serve point during countdown).
+    // Kinematic bodies only support Speculative continuous detection, so switch modes.
+    public void Hold(Vector3 pos)
+    {
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        rb.isKinematic            = true;
+        rb.position               = pos;
+    }
+
+    // Release a held ball with the given velocity
+    public void Launch(Vector3 velocity)
+    {
+        rb.isKinematic            = false;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.linearVelocity         = velocity;
+        rb.angularVelocity        = Vector3.zero;
+    }
+
+    // Rescale current velocity to the given speed, keeping direction
+    public void SetSpeed(float speed)
+    {
+        if (rb.linearVelocity.sqrMagnitude < 0.0001f) return;
+        rb.linearVelocity = rb.linearVelocity.normalized * Mathf.Min(speed, maxSpeed);
     }
 }

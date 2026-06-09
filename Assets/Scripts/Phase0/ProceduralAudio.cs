@@ -106,6 +106,47 @@ public static class ProceduralAudio
     // Kept for back-compat; identical to WhiteNoise.
     public static AudioClip Whoosh(float duration = 2f) => WhiteNoise(duration);
 
+    // ── Rally game UI sounds (non-spatial) ───────────────────────────────────
+
+    // Plain sine blip — countdown ticks and score counting
+    public static AudioClip Beep(float freq = 880f, float duration = 0.09f)
+        => Synth($"Beep{(int)freq}", duration, i =>
+        {
+            float t = (float)i / Rate;
+            // Short attack/release envelope to avoid clicks at clip edges
+            float env = Mathf.Clamp01(t / 0.005f) * Mathf.Clamp01((duration - t) / 0.02f);
+            return MathF.Sin(MathF.PI * 2f * freq * t) * env;
+        });
+
+    // 3-note rising arpeggio — successful return
+    public static AudioClip ReturnJingle()
+    {
+        const float note = 0.085f;
+        float[] freqs = { 660f, 880f, 1320f };
+        return Synth("ReturnJingle", note * freqs.Length, i =>
+        {
+            float t    = (float)i / Rate;
+            int   idx  = Mathf.Min((int)(t / note), freqs.Length - 1);
+            float tn   = t - idx * note;
+            float env  = Mathf.Clamp01(tn / 0.005f) * MathF.Exp(-tn * 18f);
+            return MathF.Sin(MathF.PI * 2f * freqs[idx] * tn) * env;
+        });
+    }
+
+    // Two-tone descending "wah" — rally lost
+    public static AudioClip MissTone()
+    {
+        const float dur = 0.6f, f0 = 440f, f1 = 220f;
+        return Synth("MissTone", dur, i =>
+        {
+            float t = (float)i / Rate;
+            // Linear chirp downward (phase integral, same approach as PaddlePop)
+            float phase = MathF.PI * 2f * (f0 * t + (f1 - f0) * t * t / (2f * dur));
+            float env   = Mathf.Clamp01(t / 0.01f) * MathF.Exp(-t * 4f);
+            return MathF.Sin(phase) * env;
+        });
+    }
+
     static AudioClip Synth(string clipName, float duration, Func<int, float> sample)
     {
         int     n    = Mathf.CeilToInt(Rate * duration);
